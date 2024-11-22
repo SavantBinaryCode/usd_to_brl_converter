@@ -1,0 +1,175 @@
+/* style.css */
+
+/* Theme Variables */
+:root {
+  --bg-color-light: #ffffff;
+  --modal-bg-light: #ffffff;
+  --modal-text-light: #000000;
+  --text-color-light: #000000;
+  --btn-bg-light: #007bff;
+  --btn-bg-secondary-light: #6c757d;
+  --list-bg-light: #f8f9fa;
+  --list-text-light: #000000;
+
+  --bg-color-dark: #212529;
+  --modal-bg-dark: #343a40;
+  --modal-text-dark: #f8f9fa;
+  --text-color-dark: #ffffff;
+  --btn-bg-dark: #6c757d;
+  --btn-bg-secondary-dark: #495057;
+  --list-bg-dark: #495057;
+  --list-text-dark: #ffffff;
+}
+
+/* General Themes */
+.light-theme {
+  background-color: var(--bg-color-light);
+  color: var(--text-color-light);
+}
+
+.dark-theme {
+  background-color: var(--bg-color-dark);
+  color: var(--text-color-dark);
+}
+
+/* Centering all content */
+.full-height-container {
+  height: 100vh; /* Full viewport height */
+}
+
+/* Modal Styles for Themes */
+.light-theme .modal-content {
+  background-color: var(--modal-bg-light);
+  color: var(--modal-text-light);
+}
+
+.dark-theme .modal-content {
+  background-color: var(--modal-bg-dark);
+  color: var(--modal-text-dark);
+}
+
+/* Buttons */
+.btn-primary {
+  background-color: var(--btn-bg-light);
+}
+.dark-theme .btn-primary {
+  background-color: var(--btn-bg-dark);
+}
+
+.btn-secondary {
+  background-color: var(--btn-bg-secondary-light);
+}
+.dark-theme .btn-secondary {
+  background-color: var(--btn-bg-secondary-dark);
+}
+
+/* List Items */
+.list-group-item {
+  background-color: var(--list-bg-light);
+  color: var(--list-text-light);
+}
+.dark-theme .list-group-item {
+  background-color: var(--list-bg-dark);
+  color: var(--list-text-dark);
+}
+
+/* Toggle Switch */
+.switch-container {
+  position: absolute;
+  top: 20px;       /* Distance from the top */
+  right: 20px;     /* Distance from the right */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Toggle switch styling */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 34px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: 0.4s;
+  border-radius: 34px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: 0.4s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: #007bff;
+}
+
+input:checked + .slider:before {
+  transform: translateX(26px);
+}
+
+.light-icon, .dark-icon {
+  font-size: 1.5rem;
+}
+
+/* Custom styles for modal buttons */
+.custom-modal-button {
+  width: 80%; /* Make buttons wide; adjust percentage as needed */
+  font-size: 1.25rem; /* Increase font size */
+  padding: 15px 0; /* Add vertical padding for larger button height */
+  background-color: #007bff; /* Blue color for primary buttons */
+  color: #ffffff;
+}
+
+.custom-modal-button:hover {
+  background-color: #0056b3; /* Darker blue on hover */
+}
+
+/* Style for invalid inputs */
+input.is-invalid {
+  border-color: red;
+  background-color: #ffe5e5;
+}
+
+/* Style for the required message */
+.required-message {
+  color: red;
+  font-size: 0.875rem;
+  display: none; /* Hidden by default */
+}
+
+/* Red button for invalid state */
+.btn-invalid {
+  background-color: red !important;
+  border-color: red !important;
+  color: white !important;
+}
+
+/* Blue button for valid state (default Bootstrap styling) */
+.btn-primary {
+  background-color: #007bff !important;
+  border-color: #007bff !important;
+  color: white !important;
+}
