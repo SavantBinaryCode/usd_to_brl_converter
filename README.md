@@ -1,20 +1,3 @@
-├── **index.html**  # Arquivo principal da aplicação
-│
-├── **css/**  # Diretório para arquivos CSS
-│   └── **style.css**  # Arquivo de estilos
-│
-├── **js/**  # Diretório para arquivos JavaScript
-│   ├── **ApiService.js**       # Serviço para chamadas à API do Banco Central
-│   ├── **Converter.js**        # Lógica do conversor de moeda
-│   ├── **HistoricalData.js**   # Lógica para exibição de dados históricos
-│   ├── **main.js**             # Inicializa as funcionalidades da aplicação
-│   ├── **ModalManager.js**     # Gerenciamento de modais da aplicação
-│   ├── **ThemeManager.js**     # Gerenciamento de temas (modo claro/escuro)
-│   └── **utils/**  # Diretório utilitário
-│       └── **DateUtils.js**    # Funções utilitárias para manipulação de datas
-│
-└── **assets/ (opcional)**  # Caso tenha imagens ou outros recursos estáticos
-
 ## **Visão Geral do Projeto**
 
 Este projeto é uma aplicação web modular que realiza a conversão de **USD para BRL** e apresenta o **histórico de taxas de câmbio**. Ele utiliza **Programação Orientada a Objetos (OOP)** e elementos de **Design Orientado ao Domínio (DDD)** para organizar o código de forma limpa, escalável e de fácil manutenção.
