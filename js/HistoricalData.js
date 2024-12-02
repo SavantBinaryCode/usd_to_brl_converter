@@ -1,126 +1,120 @@
 class HistoricalData {
     constructor() {
-      this.chart = null; // Stores the ApexCharts instance
-      this.init(); // Initializes event listeners
+        this.chart = null;
+        this.dateUtils = new DateUtils();
+        this.setupEvents();
     }
-  
-    // Initialize form and button events
-    init() {
-      // Listener for "Get Data" button
-      document.getElementById('historicalForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        await this.displayHistoricalData();
-      });
-  
-      // Listener for "Download as PDF" button
-      document.getElementById('downloadPdf').addEventListener('click', async () => {
-        await this.downloadPDF();
-      });
+
+    setupEvents() {
+        const historicalForm = document.getElementById('historicalForm'); 
+        const downloadPdfButton = document.getElementById('downloadPdf');
+
+        if (historicalForm) {
+            historicalForm.addEventListener('submit', async (event) => {
+                event.preventDefault();
+                await this.displayHistoricalData();
+            });
+        }
+
+        if (downloadPdfButton) {
+            downloadPdfButton.addEventListener('click', async () => {
+                await this.generatePDF();
+            });
+        }
     }
-  
-    // Fetch and display historical data
+
     async displayHistoricalData() {
-      const period = parseInt(document.getElementById('periodSelect').value); // Get selected period
-      const startDate = DateUtils.getDateBefore(period); // Start date
-      const endDate = DateUtils.formatDateToMMDDYYYY(new Date()); // End date (today)
-  
-      // Fetch historical data from API
-      const data = await ApiService.fetchHistoricalData(startDate, endDate);
-  
-      // Extract dates and rates
-      const dates = data.map(item => DateUtils.formatDateToBrazilian(new Date(item.dataHoraCotacao)));
-      const rates = data.map(item => item.cotacaoCompra);
-  
-      // Render the chart and the list
-      this.renderChart(dates, rates);
-      this.renderList(data);
-  
-      // Show the "Download as PDF" button
-      this.showDownloadButton();
+        const periodSelect = document.getElementById('periodSelect');
+        if (!periodSelect) {
+            console.error("Campo de selecao de periodo nao encontrado.");
+            return;
+        }
+
+        const period = parseInt(periodSelect.value, 10);
+        const startDate = this.dateUtils.getDateBefore(period);
+        const endDate = this.dateUtils.formatDateToMMDDYYYY(new Date());
+
+        const apiService = new ApiService();
+        const data = await apiService.fetchHistoricalData(startDate, endDate);
+
+        const dates = data.map(item => this.dateUtils.formatDateToBrazilian(new Date(item.dataHoraCotacao)));
+        const rates = data.map(item => item.cotacaoCompra);
+
+        this.renderChart(dates, rates);
+        this.renderList(data);
+
+        this.showDownloadButton();
     }
-  
-    // Render the chart with ApexCharts
+
+
     renderChart(dates, rates) {
-      if (this.chart) {
-        this.chart.destroy(); // Destroy the previous chart instance
-      }
-  
-      const isDarkMode = document.body.classList.contains('dark-theme'); // Detect theme
-      const options = {
-        series: [{ name: "USD to BRL Rate", data: rates }],
-        chart: { type: 'line', height: 350 },
-        xaxis: { categories: dates, title: { text: 'Date' } },
-        yaxis: { title: { text: 'Exchange Rate (BRL)' } },
-        title: { text: 'Historical USD to BRL Exchange Rate', align: 'center' },
-        theme: { mode: isDarkMode ? 'dark' : 'light' }
-      };
-  
-      // Initialize ApexCharts
-      this.chart = new ApexCharts(document.querySelector("#chart"), options);
-      this.chart.render();
+        if (this.chart) {
+            this.chart.destroy();
+        }
+
+        const isDarkMode = document.body.classList.contains('dark-theme');
+
+        const options = {
+            series: [{ name: "Taxa de Cambio (USD para BRL)", data: rates }],
+            chart: { type: 'line', height: 350 },
+            xaxis: { categories: dates, title: { text: 'Data' } },
+            yaxis: { title: { text: 'Taxa de Cambio (BRL)' } },
+            title: { text: 'Taxas Historicas (USD para BRL)', align: 'center' },
+            theme: { mode: isDarkMode ? 'dark' : 'light' }
+        };
+
+        this.chart = new ApexCharts(document.querySelector("#chart"), options); // Cria o grafico
+        this.chart.render(); // Renderiza o grafico
     }
-  
-    // Render the historical data list
+
     renderList(data) {
-      const resultDiv = document.getElementById('historicalResult');
-      resultDiv.innerHTML = `
-        <ul class="list-group">
-          ${data.map(item => `
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-              Date: ${DateUtils.formatDateToBrazilian(new Date(item.dataHoraCotacao))} - 
-              Rate: ${item.cotacaoCompra.toFixed(2)} BRL
-            </li>
-          `).join('')}
-        </ul>`;
+        const resultDiv = document.getElementById('historicalResult');
+        resultDiv.innerHTML = `
+            <ul class="list-group">
+                ${data.map(item => `
+                    <li class="list-group-item">
+                        Data: ${this.dateUtils.formatDateToBrazilian(new Date(item.dataHoraCotacao))} - 
+                        Taxa: ${item.cotacaoCompra.toFixed(2)} BRL
+                    </li>
+                `).join('')}
+            </ul>`;
     }
-  
-    // Show the "Download as PDF" button
+
     showDownloadButton() {
-      const downloadButton = document.getElementById('downloadPdf');
-      downloadButton.hidden = false; // Make the button visible
+        const downloadButton = document.getElementById('downloadPdf');
+        if (downloadButton) {
+            downloadButton.hidden = false; 
+        }
     }
-  
-    // Generate and download the PDF
-    async downloadPDF() {
-      try {
-        const { jsPDF } = window.jspdf; // Access jsPDF from global scope
-        const chartElement = document.querySelector("#chart");
+
+    async generatePDF() {
+        const { jsPDF } = window.jspdf; 
+        const chartElement = document.querySelector("#chart"); 
         const listElement = document.querySelector("#historicalResult");
-  
-        // Convert chart to an image using html2canvas
-        const chartImage = await html2canvas(chartElement).then(canvas => canvas.toDataURL("image/png"));
-  
-        // Initialize jsPDF
-        const pdf = new jsPDF("p", "mm", "a4");
-  
-        // Add chart image to the PDF
-        pdf.addImage(chartImage, "PNG", 10, 10, 190, 100);
-  
-        // Prepare list data for the table
-        const listItems = Array.from(listElement.querySelectorAll(".list-group-item")).map(item => {
-          const text = item.textContent.split("-");
-          return {
-            date: text[0].replace("Date: ", "").trim(),
-            rate: text[1].replace("Rate: ", "").trim(),
-          };
-        });
-  
-        const tableRows = listItems.map(item => [item.date, item.rate]);
-  
-        // Add the table to the PDF
-        pdf.autoTable({
-          head: [["Date", "Exchange Rate"]],
-          body: tableRows,
-          startY: 120,
-        });
-  
-        // Save the PDF file
-        pdf.save("HistoricalData.pdf");
-        console.log("PDF generated successfully");
-      } catch (error) {
-        console.error("Error generating PDF:", error);
-        alert("Failed to generate PDF. Please check console for more details.");
-      }
+
+        try {
+            const chartImage = await html2canvas(chartElement).then(canvas => canvas.toDataURL("image/png"));
+
+            const pdf = new jsPDF();
+
+            pdf.addImage(chartImage, "PNG", 10, 10, 190, 100);
+
+            const rows = Array.from(listElement.querySelectorAll(".list-group-item")).map(item => {
+                const text = item.textContent.split(" - "); 
+                const date = text[0].replace("Data: ", "").trim();
+                const rate = text[1].replace("Taxa: ", "").trim();
+                return [date, rate];
+            });
+
+            pdf.autoTable({
+                head: [["Data", "Taxa de Cambio"]],
+                body: rows,
+                startY: 120,
+            });
+
+            pdf.save("TaxasHistoricas.pdf");
+        } catch (error) {
+            console.error("Erro ao gerar o PDF:", error);
+        }
     }
-  }
-  
+}

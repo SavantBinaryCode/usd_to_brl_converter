@@ -1,148 +1,166 @@
 class Converter {
-  constructor() {
-      this.IOF = 4.38;
-      this.exchangeRate = null;
-      this.exchangeRateDate = null; // To store the date of the fetched exchange rate
-      this.init();
-  }
+    constructor(apiService, dateUtils) {
+        this.IOF = 4.38;
+        this.apiService = apiService; 
+        this.dateUtils = dateUtils; 
+        this.exchangeRate = null; 
+        this.exchangeRateDate = null;
 
-  init() {
-      document.getElementById('converterForm').addEventListener('submit', async (e) => {
-          e.preventDefault();
-          if (!this.validateInputs()) {
-              return;
-          }
-          await this.convertCurrency();
-      });
+        this.init();
+    }
 
-      this.addInputHandlers();
-  }
+    init() {
+        this.setupFormSubmitHandler(); // Configura o manipulador do evento de submissao do formulario
+        this.addInputHandlers(); // Configura os eventos de entrada nos campos
+    }
 
-  addInputHandlers() {
-      const usdInput = document.getElementById('usdAmount');
-      const spreadInput = document.getElementById('bankSpread');
-      const convertButton = document.querySelector('#converterForm button[type="submit"]');
+    setupFormSubmitHandler() {
+        const converterForm = document.getElementById('converterForm');
+        converterForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!this.validateInputs()) {
+                return;
+            }
+            await this.convertCurrency();
+        });
+    }
 
-      [usdInput, spreadInput].forEach(input => {
-          input.addEventListener('input', () => {
-              input.classList.remove('is-invalid'); // Remove red highlight
-              const requiredMessage = input.nextElementSibling; // Find the message span
-              if (requiredMessage) {
-                  requiredMessage.style.display = 'none'; // Hide the message
-              }
+    addInputHandlers() {
+        const usdInput = document.getElementById('usdAmount'); 
+        const spreadInput = document.getElementById('bankSpread'); 
+        const convertButton = document.querySelector('#converterForm button[type="submit"]'); 
 
-              // Update button state
-              this.updateButtonState(convertButton);
-          });
+        usdInput.addEventListener('input', () => {
+            this.clearInputError(usdInput); 
+            this.updateButtonState(convertButton); 
+        });
 
-          input.addEventListener('blur', () => {
-              const value = input.value.trim();
+        usdInput.addEventListener('blur', () => {
+            this.formatInputValue(usdInput); 
+        });
 
-              if (value && !isNaN(value)) {
-                  input.value = parseFloat(value).toFixed(2);
-              }
-          });
-      });
-  }
+        spreadInput.addEventListener('input', () => {
+            this.clearInputError(spreadInput); 
+            this.updateButtonState(convertButton); 
+        });
 
-  validateInputs() {
-      const usdInput = document.getElementById('usdAmount');
-      const spreadInput = document.getElementById('bankSpread');
-      const convertButton = document.querySelector('#converterForm button[type="submit"]');
-      let isValid = true;
+        spreadInput.addEventListener('blur', () => {
+            this.formatInputValue(spreadInput);
+        });
+    }
 
-      if (!usdInput.value.trim() || isNaN(parseFloat(usdInput.value))) {
-          this.markInvalid(usdInput, "USD Amount is required");
-          isValid = false;
-      }
+    clearInputError(input) {
+        input.classList.remove('is-invalid'); 
+        const requiredMessage = input.nextElementSibling; 
+        if (requiredMessage) {
+            requiredMessage.style.display = 'none'; 
+        }
+    }
 
-      if (!spreadInput.value.trim() || isNaN(parseFloat(spreadInput.value))) {
-          this.markInvalid(spreadInput, "Bank Spread is required");
-          isValid = false;
-      }
+    formatInputValue(input) {
+        const value = input.value.trim(); 
+        if (value && !isNaN(value)) {
+            input.value = parseFloat(value).toFixed(2);
+        }
+    }
 
-      this.updateButtonState(convertButton, isValid);
-      return isValid;
-  }
+    updateButtonState(button, isValid = null) {
+        if (isValid === null) {
+            const usdAmount = document.getElementById('usdAmount').value.trim();
+            const bankSpread = document.getElementById('bankSpread').value.trim();
+            isValid = usdAmount && !isNaN(parseFloat(usdAmount)) && bankSpread && !isNaN(parseFloat(bankSpread));
+        }
 
-  markInvalid(input, message) {
-      input.classList.add('is-invalid'); // Add red highlight
-      let requiredMessage = input.nextElementSibling;
+        if (isValid) {
+            button.classList.remove('btn-invalid');
+            button.classList.add('btn-primary');
+        } else {
+            button.classList.remove('btn-primary');
+            button.classList.add('btn-invalid');
+        }
+    }
 
-      // If no message span exists, create one
-      if (!requiredMessage || !requiredMessage.classList.contains('required-message')) {
-          requiredMessage = document.createElement('span');
-          requiredMessage.classList.add('required-message');
-          requiredMessage.textContent = message;
-          input.parentNode.appendChild(requiredMessage);
-      }
+    validateInputs() {
+        const usdInput = document.getElementById('usdAmount');
+        const spreadInput = document.getElementById('bankSpread');
+        const convertButton = document.querySelector('#converterForm button[type="submit"]');
+        let isValid = true;
 
-      requiredMessage.style.display = 'inline'; // Show the message
-  }
+        if (!usdInput.value.trim() || isNaN(parseFloat(usdInput.value))) {
+            this.markInvalid(usdInput, "O valor em USD e obrigatorio");
+            isValid = false;
+        }
 
-  updateButtonState(button, isValid = null) {
-      // Check if both inputs are valid if isValid is not passed
-      if (isValid === null) {
-          const usdAmount = document.getElementById('usdAmount').value.trim();
-          const bankSpread = document.getElementById('bankSpread').value.trim();
-          isValid = usdAmount && !isNaN(parseFloat(usdAmount)) && bankSpread && !isNaN(parseFloat(bankSpread));
-      }
+        if (!spreadInput.value.trim() || isNaN(parseFloat(spreadInput.value))) {
+            this.markInvalid(spreadInput, "O spread bancario e obrigatorio");
+            isValid = false;
+        }
 
-      if (isValid) {
-          button.classList.remove('btn-invalid');
-          button.classList.add('btn-primary');
-      } else {
-          button.classList.remove('btn-primary');
-          button.classList.add('btn-invalid');
-      }
-  }
+        this.updateButtonState(convertButton, isValid);
+        return isValid;
+    }
 
-  async convertCurrency() {
-      const usdAmount = parseFloat(document.getElementById('usdAmount').value.trim());
-      const bankSpread = parseFloat(document.getElementById('bankSpread').value.trim());
+    markInvalid(input, message) {
+        input.classList.add('is-invalid');
+        let requiredMessage = input.nextElementSibling;
 
-      if (!this.exchangeRate) {
-          this.exchangeRate = await this.fetchValidExchangeRate();
-      }
+        if (!requiredMessage || !requiredMessage.classList.contains('required-message')) {
+            requiredMessage = document.createElement('span');
+            requiredMessage.classList.add('required-message');
+            requiredMessage.textContent = message;
+            input.parentNode.appendChild(requiredMessage);
+        }
 
-      if (!this.exchangeRate) {
-          alert("Unable to retrieve exchange rate data. Please try again later.");
-          return;
-      }
+        requiredMessage.style.display = 'inline'; // Exibe a mensagem
+    }
 
-      const spreadAmount = usdAmount * (bankSpread / 100);
-      const totalWithSpread = usdAmount + spreadAmount;
-      const iofAmount = totalWithSpread * (this.IOF / 100);
-      const finalValue = totalWithSpread * this.exchangeRate + iofAmount * this.exchangeRate;
+    async convertCurrency() {
+        const usdAmount = parseFloat(document.getElementById('usdAmount').value.trim());
+        const bankSpread = parseFloat(document.getElementById('bankSpread').value.trim());
 
-      this.displayResult(iofAmount * this.exchangeRate, spreadAmount * this.exchangeRate, finalValue);
-  }
+        if (!this.exchangeRate) {
+            this.exchangeRate = await this.fetchValidExchangeRate();
+        }
 
-  async fetchValidExchangeRate() {
-      let date = new Date();
-      let formattedDate = DateUtils.formatDateToMMDDYYYY(date);
+        if (!this.exchangeRate) {
+            alert("Nao foi possivel obter a taxa de cambio. Tente novamente mais tarde.");
+            return;
+        }
 
-      while (true) {
-          const rate = await ApiService.fetchCurrentExchangeRate(formattedDate);
+        const spreadAmount = usdAmount * (bankSpread / 100);
+        const totalWithSpread = usdAmount + spreadAmount;
+        const iofAmount = totalWithSpread * (this.IOF / 100);
+        const finalValue = totalWithSpread * this.exchangeRate + iofAmount * this.exchangeRate;
 
-          if (rate !== null) {
-              this.exchangeRateDate = date; // Store the date object instead of formatted string
-              return rate;
-          }
+        this.displayResult(iofAmount * this.exchangeRate, spreadAmount * this.exchangeRate, finalValue);
+    }
 
-          date.setDate(date.getDate() - 1);
-          formattedDate = DateUtils.formatDateToMMDDYYYY(date);
-      }
-  }
+    displayResult(iofAmount, spreadAmount, finalValue) {
+        const resultDiv = document.getElementById('result');
+        const formattedExchangeRateDate = this.dateUtils.formatDateToBrazilian(this.exchangeRateDate);
 
-  displayResult(iofAmount, spreadAmount, finalValue) {
-      const resultDiv = document.getElementById('result');
-      const formattedExchangeRateDate = DateUtils.formatDateToBrazilian(this.exchangeRateDate); // Format date to DD/MM/YYYY
-      resultDiv.innerHTML = `
-          <p>Exchange Rate Date: <strong>${formattedExchangeRateDate}</strong></p>
-          <p>IOF Tax in BRL: <strong>${iofAmount.toFixed(2)}</strong></p>
-          <p>Bank Spread Tax in BRL: <strong>${spreadAmount.toFixed(2)}</strong></p>
-          <p>Final Convert Value in BRL: <strong>${finalValue.toFixed(2)}</strong></p>
-      `;
-  }
+        resultDiv.innerHTML = `
+            <p>Data da Taxa de Cambio: <strong>${formattedExchangeRateDate}</strong></p>
+            <p>IOF em BRL: <strong>${iofAmount.toFixed(2)}</strong></p>
+            <p>Spread Bancario em BRL: <strong>${spreadAmount.toFixed(2)}</strong></p>
+            <p>Valor Final em BRL: <strong>${finalValue.toFixed(2)}</strong></p>
+        `;
+    }
+
+    async fetchValidExchangeRate() {
+        let date = new Date(); 
+        let formattedDate = this.dateUtils.formatDateToMMDDYYYY(date);
+
+        while (true) {
+            const rate = await this.apiService.fetchCurrentExchangeRate(formattedDate);
+
+            if (rate !== null) {
+                this.exchangeRateDate = date;
+                return rate;
+            }
+            
+            date.setDate(date.getDate() - 1);
+            formattedDate = this.dateUtils.formatDateToMMDDYYYY(date);
+        }
+    }
 }

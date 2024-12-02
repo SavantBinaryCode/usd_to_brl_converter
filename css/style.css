@@ -1,6 +1,3 @@
-/* style.css */
-
-/* Theme Variables */
 :root {
   --bg-color-light: #ffffff;
   --modal-bg-light: #ffffff;
@@ -21,7 +18,6 @@
   --list-text-dark: #ffffff;
 }
 
-/* General Themes */
 .light-theme {
   background-color: var(--bg-color-light);
   color: var(--text-color-light);
@@ -32,12 +28,10 @@
   color: var(--text-color-dark);
 }
 
-/* Centering all content */
 .full-height-container {
-  height: 100vh; /* Full viewport height */
+  height: 100vh;
 }
 
-/* Modal Styles for Themes */
 .light-theme .modal-content {
   background-color: var(--modal-bg-light);
   color: var(--modal-text-light);
@@ -48,7 +42,6 @@
   color: var(--modal-text-dark);
 }
 
-/* Buttons */
 .btn-primary {
   background-color: var(--btn-bg-light);
 }
@@ -63,7 +56,6 @@
   background-color: var(--btn-bg-secondary-dark);
 }
 
-/* List Items */
 .list-group-item {
   background-color: var(--list-bg-light);
   color: var(--list-text-light);
@@ -73,18 +65,16 @@
   color: var(--list-text-dark);
 }
 
-/* Toggle Switch */
 .switch-container {
   position: absolute;
-  top: 20px;       /* Distance from the top */
-  right: 20px;     /* Distance from the right */
+  top: 20px;
+  right: 20px;
   display: flex;
   justify-content: center;
   align-items: center;
   gap: 10px;
 }
 
-/* Toggle switch styling */
 .switch {
   position: relative;
   display: inline-block;
@@ -134,42 +124,24 @@ input:checked + .slider:before {
   font-size: 1.5rem;
 }
 
-/* Custom styles for modal buttons */
 .custom-modal-button {
-  width: 80%; /* Make buttons wide; adjust percentage as needed */
-  font-size: 1.25rem; /* Increase font size */
-  padding: 15px 0; /* Add vertical padding for larger button height */
-  background-color: #007bff; /* Blue color for primary buttons */
-  color: #ffffff;
+  width: 80%; 
+  font-size: 1.25rem;
+  padding: 15px 0;
 }
 
-.custom-modal-button:hover {
-  background-color: #0056b3; /* Darker blue on hover */
-}
-
-/* Style for invalid inputs */
 input.is-invalid {
   border-color: red;
   background-color: #ffe5e5;
 }
 
-/* Style for the required message */
 .required-message {
   color: red;
   font-size: 0.875rem;
-  display: none; /* Hidden by default */
+  display: none;
 }
 
-/* Red button for invalid state */
 .btn-invalid {
   background-color: red !important;
-  border-color: red !important;
-  color: white !important;
-}
-
-/* Blue button for valid state (default Bootstrap styling) */
-.btn-primary {
-  background-color: #007bff !important;
-  border-color: #007bff !important;
   color: white !important;
 }
